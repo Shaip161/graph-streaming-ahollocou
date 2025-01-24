@@ -1,3 +1,6 @@
 [submodule "cpp/extern/VieClus"]
 	path = cpp/extern/VieClus
 	url = https://github.com/VieClus/VieClus.git
+[submodule "cpp/extern/flatbuffers"]
+	path = cpp/extern/flatbuffers
+	url = https://github.com/google/flatbuffers.git
