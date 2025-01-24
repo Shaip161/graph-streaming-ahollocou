@@ -1,0 +1,3 @@
+[submodule "cpp/extern/VieClus"]
+	path = cpp/extern/VieClus
+	url = https://github.com/VieClus/VieClus.git
