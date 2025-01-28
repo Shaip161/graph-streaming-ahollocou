@@ -79,6 +79,10 @@ int StreamComAlgo(//const std::vector< Edge >& edgeList,
                  std::vector< std::vector< EdgeID > >& communityVolumeList,
                  std::vector< EdgeID >& maxVolumeList,
                  uint32_t condition,
+                 timer & io_t,
+                 double & io_time,
+                 timer & mapping_t,
+                 double & mapping_time,
                  uint32_t randSeed=0
                  ) {
     // Random shuffle
@@ -87,11 +91,19 @@ int StreamComAlgo(//const std::vector< Edge >& edgeList,
     //std::random_shuffle(shuffledEdgeList.begin(), shuffledEdgeList.end(), myrandom);
     // Aggregation
     std::vector< uint32_t > nextCommunityIdList (maxVolumeList.size(), 1);
+
+    mapping_time += io_time; 
+    mapping_t.restart();
+
     while(true) {
+        io_t.restart();
         Edge edge = EdgeStream(inFile);
         if(edge.first == -1 || edge.second == -1) {
             break;
         }
+
+        io_time += io_t.elapsed();
+
         edge_amount++;
         NodeID sourceNode = edge.first;
         NodeID targetNode = edge.second;
@@ -123,6 +135,10 @@ int StreamComAlgo(//const std::vector< Edge >& edgeList,
             }
         }
     }
+    
+    mapping_time += mapping_t.elapsed();
+    mapping_time -= io_time;
+
     return 0;
 }
 
@@ -224,6 +240,9 @@ int main(int argc, char ** argv) {
 
     // Allocating list for edges
     //std::vector< Edge > edgeList;
+
+    total_t.restart();
+
     std::ifstream * inFile = NULL;
     std::string filename = graphFileName;
     inFile = new std::ifstream(filename.c_str());
@@ -254,8 +273,6 @@ int main(int argc, char ** argv) {
 
     for (uint32_t iter = 0; iter < nIter; iter ++) {
         
-        total_t.restart();
-
         std::vector< EdgeID > volumeThresholdList;
         for (uint32_t volumeThreshold = volumeThresholdStart; volumeThreshold <= volumeThresholdEnd; volumeThreshold++) {
             volumeThresholdList.push_back(volumeThreshold);
@@ -267,9 +284,7 @@ int main(int argc, char ** argv) {
         //=================== ALGORITHM  =======================================
         //printf("Start algorithm...\n");
         //initTime = StartClock();
-        mapping_t.restart();
-        StreamComAlgo(inFile, edge_amount, nodeCommunityList, nodeDegree, communityVolumeList, volumeThresholdList, condition, randomSeed * (1 + iter));
-        mapping_time += mapping_t.elapsed();
+        StreamComAlgo(inFile, edge_amount, nodeCommunityList, nodeDegree, communityVolumeList, volumeThresholdList, condition, io_t, io_time, mapping_t, mapping_time, randomSeed * (1 + iter));
         //spentTime = StopClock(initTime);
         //algorithmTime += spentTime;
         //totalTime += spentTime;
