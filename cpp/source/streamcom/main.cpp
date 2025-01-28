@@ -268,9 +268,6 @@ int main(int argc, char ** argv) {
     EdgeID edge_amount = 0; 
     PartitionID nbCommunities = 0;
    
-    volumeThresholdStart = (maxNodeId * 0.2) * (total_edges * 0.2);
-    volumeThresholdEnd = (maxNodeId * 0.2) * (total_edges * 0.2);
-
     for (uint32_t iter = 0; iter < nIter; iter ++) {
         
         std::vector< EdgeID > volumeThresholdList;

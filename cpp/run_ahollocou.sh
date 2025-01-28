@@ -4,8 +4,8 @@
 graph_dir="../edge_graphs/" # Change this to your actual directory containing graph files
 output_dir="results/"
 metis_dir="../graphs/"
-VmaxStart=1000
-VmaxEnd=1000
+VmaxStart=15
+VmaxEnd=15
 mkdir -p "$output_dir"
 
 # Loop over each graph file in the directory
