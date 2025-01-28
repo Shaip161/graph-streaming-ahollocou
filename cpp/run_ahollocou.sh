@@ -22,7 +22,7 @@ for graph_file in "$graph_dir"*; do
     python3 cluster_file_converter.py "$output_dir$graph_name.txt" "$output_dir${graph_name}_vieclus.txt"
 
     # Step 3: Run the VieClus evaluator
-    evaluator_output=$(build/extern/VieClus/./evaluator "$metis_dir$graph_name.txt" --input_partition="$output_dir$graph_name.txt")
+    evaluator_output=$(build/extern/VieClus/./evaluator "$metis_dir$graph_name.txt" --input_partition="$output_dir${graph_name}_vieclus.txt")
 
     # Step 4: Extract the new score from the evaluator output
     new_score=$(echo "$evaluator_output" | grep -oP '\b\d+\.\d+\b')
