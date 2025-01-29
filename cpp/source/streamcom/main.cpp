@@ -290,6 +290,15 @@ int main(int argc, char ** argv) {
 
         total_time += total_t.elapsed();
 
+        NodeID biggest_partition_id = 0;
+
+        for (NodeID j = 0; j <= maxNodeId; j++) {
+            if(nodeCommunityList[0][j] > biggest_partition_id) {
+                biggest_partition_id = nodeCommunityList[0][j];
+            } 
+        }
+        biggest_partition_id++;
+
         //======================== PRINT RESULTS ===============================
         //initTime = StartClock();
         for (uint32_t i = 0; i < volumeThresholdList.size(); i++) {
@@ -297,6 +306,9 @@ int main(int argc, char ** argv) {
             for (NodeID j = 0; j <= maxNodeId; j++) {
                 if (nodeCommunityList[i][j] > 0) {
                     communities[nodeCommunityList[i][j]].insert(j);
+                } else {
+                    communities[biggest_partition_id].insert(j);
+                    biggest_partition_id++;
                 }
             }
             //GetCommunities(nodeCommunityList[i], maxNodeId, communities);
