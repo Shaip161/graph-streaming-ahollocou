@@ -71,13 +71,13 @@ Edge EdgeStream(std::ifstream *& inFile) {
     return new_edge;
 }
 
-int StreamComAlgo(//const std::vector< Edge >& edgeList,
-                 std::ifstream *& inFile,
-                 EdgeID & edge_amount,
-                 std::vector< std::vector< PartitionID > >& nodeCommunityList,
-                 std::vector< EdgeID >& nodeDegree,
-                 std::vector< std::vector< EdgeID > >& communityVolumeList,
-                 std::vector< EdgeID >& maxVolumeList,
+int StreamComAlgo(const std::vector< Edge >& edgeList,
+                 /*std::ifstream *& inFile,
+                 EdgeID & edge_amount,*/
+                 std::vector< std::vector< uint32_t > >& nodeCommunityList,
+                 std::vector< uint32_t >& nodeDegree,
+                 std::vector< std::vector< uint32_t > >& communityVolumeList,
+                 std::vector< uint32_t >& maxVolumeList,
                  uint32_t condition,
                  timer & io_t,
                  double & io_time,
@@ -86,27 +86,28 @@ int StreamComAlgo(//const std::vector< Edge >& edgeList,
                  uint32_t randSeed=0
                  ) {
     // Random shuffle
-    //std::srand(randSeed); // use current time as seed for random generator
-    //std::vector< Edge > shuffledEdgeList (edgeList);
-    //std::random_shuffle(shuffledEdgeList.begin(), shuffledEdgeList.end(), myrandom);
+    std::srand(randSeed); // use current time as seed for random generator
+    std::vector< Edge > shuffledEdgeList (edgeList);
+    std::random_shuffle(shuffledEdgeList.begin(), shuffledEdgeList.end(), myrandom);
     // Aggregation
     std::vector< uint32_t > nextCommunityIdList (maxVolumeList.size(), 1);
 
     mapping_time += io_time; 
     mapping_t.restart();
 
-    while(true) {
-        io_t.restart();
-        Edge edge = EdgeStream(inFile);
-        if(edge.first == -1 || edge.second == -1) {
-            break;
-        }
+    for (Edge edge : shuffledEdgeList) {
+    //while(true) {
+        //io_t.restart();
+        //Edge edge = EdgeStream(inFile);
+        //if(edge.first == -1 || edge.second == -1) {
+        //    break;
+        //}
 
-        io_time += io_t.elapsed();
+        //io_time += io_t.elapsed();
 
-        edge_amount++;
-        NodeID sourceNode = edge.first;
-        NodeID targetNode = edge.second;
+        //edge_amount++;
+        Node sourceNode = edge.first;
+        Node targetNode = edge.second;
         nodeDegree[sourceNode]++;
         nodeDegree[targetNode]++;
         for (uint32_t i = 0; i < maxVolumeList.size(); i++) {
@@ -182,10 +183,10 @@ int main(int argc, char ** argv) {
     char * output_path = NULL;
     char * graphFileName = NULL;
     char * outputFileName = NULL;
-    EdgeID volumeThresholdStart = 9;
-    EdgeID volumeThresholdEnd = 9;
+    uint32_t volumeThresholdStart = 9;
+    uint32_t volumeThresholdEnd = 9;
     uint32_t condition = 0;
-    uint32_t randomSeed = 0;
+    int randomSeed = 0;
     uint32_t nIter = 1;
     uint32_t nbLinesToSkip = 0;
 
@@ -238,25 +239,24 @@ int main(int argc, char ** argv) {
                   loadingTime = 0,
                   algorithmTime = 0;*/
 
-    // Allocating list for edges
-    //std::vector< Edge > edgeList;
-
     total_t.restart();
+    // Allocating list for edges
+    std::vector< Edge > edgeList;
 
-    std::ifstream * inFile = NULL;
+
+    //std::ifstream * inFile = NULL;
     std::string filename = graphFileName;
-    inFile = new std::ifstream(filename.c_str());
+    //inFile = new std::ifstream(filename.c_str());
 
     std::string baseFilename = extractBaseFilename(filename);
 
     //==================== LOAD THE GRAPH ==================================
     //printf("%-32s %s\n", "Graph file name:", graphFileName);
     //printf("%-32s %i\n", "Number of lines to skip:", nbLinesToSkip);
-    NodeID maxNodeId = 0;
-    EdgeID total_edges;
+    Node maxNodeId;
     //initTime = StartClock();
     io_t.restart();
-    LoadGraph(graphFileName, inFile, maxNodeId, total_edges, nbLinesToSkip);
+    LoadGraph(graphFileName, edgeList, /*inFile,*/ maxNodeId, /*total_edges,*/ nbLinesToSkip);
     io_time += io_t.elapsed();
     //spentTime = StopClock(initTime);
     //loadingTime = spentTime;
@@ -267,21 +267,22 @@ int main(int argc, char ** argv) {
 
     EdgeID edge_amount = 0; 
     PartitionID nbCommunities = 0;
+    long overall_max_RSS = 0;
    
     for (uint32_t iter = 0; iter < nIter; iter ++) {
         
-        std::vector< EdgeID > volumeThresholdList;
+        std::vector< uint32_t > volumeThresholdList;
         for (uint32_t volumeThreshold = volumeThresholdStart; volumeThreshold <= volumeThresholdEnd; volumeThreshold++) {
             volumeThresholdList.push_back(volumeThreshold);
         }
-        std::vector< EdgeID > nodeDegree (maxNodeId + 1);
-        std::vector< std::vector< PartitionID > > nodeCommunityList (volumeThresholdList.size(), std::vector< PartitionID > (maxNodeId + 1, 0));
-        std::vector< std::vector< EdgeID > > communityVolumeList (volumeThresholdList.size(), std::vector< EdgeID > (maxNodeId + 1, 0));
+        std::vector< uint32_t > nodeDegree (maxNodeId + 1);
+        std::vector< std::vector< uint32_t > > nodeCommunityList (volumeThresholdList.size(), std::vector< uint32_t > (maxNodeId + 1, 0));
+        std::vector< std::vector< uint32_t > > communityVolumeList (volumeThresholdList.size(), std::vector< uint32_t > (maxNodeId + 1, 0));
 
         //=================== ALGORITHM  =======================================
         //printf("Start algorithm...\n");
         //initTime = StartClock();
-        StreamComAlgo(inFile, edge_amount, nodeCommunityList, nodeDegree, communityVolumeList, volumeThresholdList, condition, io_t, io_time, mapping_t, mapping_time, randomSeed * (1 + iter));
+        StreamComAlgo(edgeList, /*inFile, edge_amount,*/ nodeCommunityList, nodeDegree, communityVolumeList, volumeThresholdList, condition, io_t, io_time, mapping_t, mapping_time, randomSeed * (1 + iter));
         //spentTime = StopClock(initTime);
         //algorithmTime += spentTime;
         //totalTime += spentTime;
@@ -290,28 +291,28 @@ int main(int argc, char ** argv) {
 
         total_time += total_t.elapsed();
 
-        NodeID biggest_partition_id = 0;
+        //NodeID biggest_partition_id = 0;
 
-        for (NodeID j = 0; j <= maxNodeId; j++) {
-            if(nodeCommunityList[0][j] > biggest_partition_id) {
-                biggest_partition_id = nodeCommunityList[0][j];
-            } 
-        }
-        biggest_partition_id++;
-
+        //for (NodeID j = 0; j <= maxNodeId; j++) {
+        //    if(nodeCommunityList[0][j] > biggest_partition_id) {
+        //        biggest_partition_id = nodeCommunityList[0][j];
+        //    } 
+        //}
+        //biggest_partition_id++;
+        overall_max_RSS = getMaxRSS();
         //======================== PRINT RESULTS ===============================
         //initTime = StartClock();
         for (uint32_t i = 0; i < volumeThresholdList.size(); i++) {
-            std::map< uint32_t, std::set< NodeID > > communities;
-            for (NodeID j = 0; j <= maxNodeId; j++) {
-                if (nodeCommunityList[i][j] > 0) {
-                    communities[nodeCommunityList[i][j]].insert(j);
-                } else {
-                    communities[biggest_partition_id].insert(j);
-                    biggest_partition_id++;
-                }
-            }
-            //GetCommunities(nodeCommunityList[i], maxNodeId, communities);
+            std::map< uint32_t, std::set< Node > > communities;
+            //for (NodeID j = 0; j <= maxNodeId; j++) {
+            //    if (nodeCommunityList[i][j] > 0) {
+            //        communities[nodeCommunityList[i][j]].insert(j);
+            //    } else {
+            //        communities[biggest_partition_id].insert(j);
+            //        biggest_partition_id++;
+            //    }
+            //}
+            GetCommunities(nodeCommunityList[i], maxNodeId, communities);
             std::string outputFileName_i = output_path + baseFilename + ".txt";
             //printf("%-32s %i\t", "Volume theshold: ", volumeThresholdList[i]);
             nbCommunities = 0;
@@ -322,8 +323,6 @@ int main(int argc, char ** argv) {
         //printf("%-32s %lu ms\n", "Print partition time:", spentTime);
         //======================================================================
     }
-
-    long overall_max_RSS = getMaxRSS();
 
     //printf("\n");
     //printf("*******************************************************\n");

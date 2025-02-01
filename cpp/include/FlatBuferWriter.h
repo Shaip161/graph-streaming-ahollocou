@@ -31,7 +31,7 @@ private:
     uint32_t vmax_start_;
     uint32_t vmax_end_;
     uint32_t condition_;
-    uint32_t seed_;
+    int seed_;
     uint32_t niter_;
 
     std::string filename_;
@@ -72,7 +72,7 @@ public:
     void updateClustreConfig(   uint32_t & vmax_start, 
                                 uint32_t & vmax_end,
                                 uint32_t & condition,
-                                uint32_t & seed,
+                                int & seed,
                                 uint32_t & niter) {
 
         vmax_start_ = vmax_start;

@@ -1,6 +1,7 @@
 #include "utils.h"
 #include <cmath>
 #include <iostream>
+#include <cstdint>
 
 int myrandom (int i) { return std::rand()%i; }
 
@@ -18,13 +19,18 @@ long unsigned StopClock(long unsigned initTime) {
     return endTime - initTime;
 }
 
-void LoadGraph(char * graphFileName,
-              std::ifstream *& inFile,
-              //std::vector< Edge >& edgeList,
-              NodeID & maxNodeId,
-              EdgeID & total_edges,
+int LoadGraph(char * graphFileName,
+              //std::ifstream *& inFile,
+              std::vector< Edge >& edgeList,
+              Node & maxNodeId,
+              //Edge & total_edges,
               uint32_t nbLinesToSkip) {
 
+    // Opening file
+    
+    std::ifstream inFile;
+    inFile.open((const char *)graphFileName);
+    /*
     if (!(*(inFile))) {
       std::cerr << "Error opening " << (*graphFileName) << std::endl;
       exit(1);
@@ -35,12 +41,20 @@ void LoadGraph(char * graphFileName,
         std::string s;
         std::getline((*inFile), s);
     }
-
-    (*inFile) >> maxNodeId; 
-    (*inFile) >> total_edges;
-    
+    */
+    uint64_t total_edges;
+    inFile >> maxNodeId; 
+    inFile >> total_edges;
+    if(!inFile) {
+        printf( "Graph: Error Openning Graph File\n" );
+        return 1;
+    }
+    for (uint32_t i = 0; i < nbLinesToSkip; i++) {
+        std::string s;
+        std::getline(inFile, s);
+    }
     // Loading edges
-    /*Node node1, node2;
+    Node node1, node2;
     maxNodeId = 0;
     while( inFile >> node1 ) {
         inFile >> node2;
@@ -51,7 +65,9 @@ void LoadGraph(char * graphFileName,
         if (node2 > maxNodeId) {
             maxNodeId = node2;
         }
-    }*/
+    }
+    inFile.close();
+    return 0;
 }
 
 
@@ -82,14 +98,14 @@ int BuildNeighborhoods(std::vector< Edge >& edgeList, std::vector< NodeSet >& no
 
 int PrintPartition(PartitionID & nbCommunities,
                    const char* fileName,
-                   std::map< uint32_t, std::set< NodeID > >& communities,
+                   std::map< uint32_t, std::set< Node > >& communities,
                    bool removeSingleton) {
     std::ofstream outFile;
     outFile.open(fileName);
     for (auto kv : communities) {
         if (!removeSingleton || kv.second.size() > 1) {
-            std::set<NodeID>::iterator it2 = kv.second.begin();
-            NodeID nodeId;
+            std::set<Node>::iterator it2 = kv.second.begin();
+            Node nodeId;
             while ( true ) {
                 nodeId = *it2;
                 ++it2;
@@ -109,9 +125,9 @@ int PrintPartition(PartitionID & nbCommunities,
 }
 
 int GetCommunities(const std::vector< uint32_t > nodeCommunity,
-                   NodeID maxNodeId,
-                   std::map< uint32_t, std::set< NodeID > >& communities) {
-    for (NodeID i = 0; i <= maxNodeId; i++) {
+                   Node maxNodeId,
+                   std::map< uint32_t, std::set< Node > >& communities) {
+    for (Node i = 0; i <= maxNodeId; i++) {
         if (nodeCommunity[i] > 0) {
             communities[nodeCommunity[i]].insert(i);
         }
