@@ -21,7 +21,7 @@ long unsigned StopClock(long unsigned initTime) {
 void LoadGraph(char * graphFileName,
               std::ifstream *& inFile,
               //std::vector< Edge >& edgeList,
-              NodeID & maxNodeId,
+              Node & maxNodeId,
               EdgeID & total_edges,
               uint32_t nbLinesToSkip) {
 
@@ -82,14 +82,14 @@ int BuildNeighborhoods(std::vector< Edge >& edgeList, std::vector< NodeSet >& no
 
 int PrintPartition(PartitionID & nbCommunities,
                    const char* fileName,
-                   std::map< uint32_t, std::set< NodeID > >& communities,
+                   std::map< uint32_t, std::set< Node > >& communities,
                    bool removeSingleton) {
     std::ofstream outFile;
     outFile.open(fileName);
     for (auto kv : communities) {
         if (!removeSingleton || kv.second.size() > 1) {
-            std::set<NodeID>::iterator it2 = kv.second.begin();
-            NodeID nodeId;
+            std::set< Node >::iterator it2 = kv.second.begin();
+            Node nodeId;
             while ( true ) {
                 nodeId = *it2;
                 ++it2;
@@ -109,9 +109,9 @@ int PrintPartition(PartitionID & nbCommunities,
 }
 
 int GetCommunities(const std::vector< uint32_t > nodeCommunity,
-                   NodeID maxNodeId,
-                   std::map< uint32_t, std::set< NodeID > >& communities) {
-    for (NodeID i = 0; i <= maxNodeId; i++) {
+                   Node maxNodeId,
+                   std::map< uint32_t, std::set< Node > >& communities) {
+    for (Node i = 0; i <= maxNodeId; i++) {
         if (nodeCommunity[i] > 0) {
             communities[nodeCommunity[i]].insert(i);
         }

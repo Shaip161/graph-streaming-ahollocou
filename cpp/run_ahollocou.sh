@@ -24,8 +24,11 @@ for graph_file in "$graph_dir"*; do
     # Step 3: Run the VieClus evaluator
     evaluator_output=$(build/extern/VieClus/./evaluator "$metis_dir$graph_name.txt" --input_partition="$output_dir${graph_name}_vieclus.txt")
 
+    echo "$evaluator_output"
+
     # Step 4: Extract the new score from the evaluator output
-    new_score=$(echo "$evaluator_output" | grep -oP '\b\d+\.\d+\b')
+    #new_score=$(echo "$evaluator_output" | grep -oP '\b\d+\.\d+\b')
+    new_score=$(echo "$evaluator_output" | grep -oP '[-+]?\d+\.\d+')
 
     echo "Extracted score for $graph_name: $new_score"
 

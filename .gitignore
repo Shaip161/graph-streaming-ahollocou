@@ -2,3 +2,7 @@ cpp/build/
 .vscode
 edge_graphs/
 graphs/
+python/
+.my_venv/
+cpp/results/
+huge_edge_graphs/

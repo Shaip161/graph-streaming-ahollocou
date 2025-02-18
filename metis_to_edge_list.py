@@ -30,6 +30,6 @@ def process_metis_files(input_dir, output_dir):
             print(f"Converted {input_file} to {output_file}")
 
 # Example usage
-input_directory = "graphs"  # Replace with your input directory path
-output_directory = "edge_graphs"  # Replace with your output directory path
+input_directory = "graphs/"  # Replace with your input directory path
+output_directory = "edge_graphs/"  # Replace with your output directory path
 process_metis_files(input_directory, output_directory)

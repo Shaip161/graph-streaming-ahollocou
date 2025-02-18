@@ -105,8 +105,8 @@ int StreamComAlgo(//const std::vector< Edge >& edgeList,
         io_time += io_t.elapsed();
 
         edge_amount++;
-        NodeID sourceNode = edge.first;
-        NodeID targetNode = edge.second;
+        Node sourceNode = edge.first;
+        Node targetNode = edge.second;
         nodeDegree[sourceNode]++;
         nodeDegree[targetNode]++;
         for (uint32_t i = 0; i < maxVolumeList.size(); i++) {
@@ -185,9 +185,11 @@ int main(int argc, char ** argv) {
     EdgeID volumeThresholdStart = 9;
     EdgeID volumeThresholdEnd = 9;
     uint32_t condition = 0;
-    uint32_t randomSeed = 0;
+    int randomSeed = 0;
     uint32_t nIter = 1;
     uint32_t nbLinesToSkip = 0;
+
+    long overall_max_RSS = 0;
 
     timer io_t, mapping_t, total_t;
 
@@ -252,7 +254,7 @@ int main(int argc, char ** argv) {
     //==================== LOAD THE GRAPH ==================================
     //printf("%-32s %s\n", "Graph file name:", graphFileName);
     //printf("%-32s %i\n", "Number of lines to skip:", nbLinesToSkip);
-    NodeID maxNodeId = 0;
+    Node maxNodeId = 0;
     EdgeID total_edges;
     //initTime = StartClock();
     io_t.restart();
@@ -289,10 +291,11 @@ int main(int argc, char ** argv) {
         //======================================================================
 
         total_time += total_t.elapsed();
+        overall_max_RSS = getMaxRSS();
 
-        NodeID biggest_partition_id = 0;
+        Node biggest_partition_id = 0;
 
-        for (NodeID j = 0; j <= maxNodeId; j++) {
+        for (Node j = 0; j <= maxNodeId; j++) {
             if(nodeCommunityList[0][j] > biggest_partition_id) {
                 biggest_partition_id = nodeCommunityList[0][j];
             } 
@@ -302,8 +305,8 @@ int main(int argc, char ** argv) {
         //======================== PRINT RESULTS ===============================
         //initTime = StartClock();
         for (uint32_t i = 0; i < volumeThresholdList.size(); i++) {
-            std::map< uint32_t, std::set< NodeID > > communities;
-            for (NodeID j = 0; j <= maxNodeId; j++) {
+            std::map< uint32_t, std::set< Node> > communities;
+            for (Node j = 0; j <= maxNodeId; j++) {
                 if (nodeCommunityList[i][j] > 0) {
                     communities[nodeCommunityList[i][j]].insert(j);
                 } else {
@@ -322,8 +325,6 @@ int main(int argc, char ** argv) {
         //printf("%-32s %lu ms\n", "Print partition time:", spentTime);
         //======================================================================
     }
-
-    long overall_max_RSS = getMaxRSS();
 
     //printf("\n");
     //printf("*******************************************************\n");
